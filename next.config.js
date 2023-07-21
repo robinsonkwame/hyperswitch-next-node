@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  transpilePackages: ['@juspay-tech/hyper-js', '@juspay-tech/react-hyper-js'],
 }
 
 module.exports = nextConfig
