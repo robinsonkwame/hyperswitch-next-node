@@ -11,19 +11,14 @@ export default function Home() {
   const [options, setOptions] = useState({})
 
   useEffect(() => {
-    fetch("https://sandbox.hyperswitch.io/payments", {
+    fetch("/create-payment", {
       method: "POST",
-      headers: { "Content-Type": "application/json", 'api-key': "API_KEY" },
-      body: JSON.stringify({
-        currency: "USD",
-        amount: 100,
-        customer_id: "juspay",
-      }),
-    })
-      .then(res => res.json())
-      .then(data => {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [{ id: "xl-tshirt" }] }),
+    }).then((res) => res.json())
+      .then((data) => {
         setOptions({
-          clientSecret: data.client_secret,
+          clientSecret: data.clientSecret,
           appearance: {
             theme: "default"
           }
