@@ -27,7 +27,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    setLoadHyperValue(loadHyper("PUBLISHABLE_KEY"));
+    setLoadHyperValue(loadHyper("HYPERSWITCH_PUBLISHABLE_KEY"));
   }, [])
 
   return (
