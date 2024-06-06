@@ -1,4 +1,13 @@
+require('dotenv').config();
 const express = require("express");
+
+// Hack
+let fetch;
+
+(async () => {
+  fetch = (await import('node-fetch')).default;
+})();
+
 const app = express();
 // This is a public sample test API key.
 // Don’t submit any personally identifiable information in requests made with this key.
@@ -7,7 +16,11 @@ app.use(express.static("public"));
 app.use(express.json());
 
 app.post("/create-payment", async (req, res) => {
-
+    console.log('starting in create payment ...')
+    if (!fetch) {
+        return res.status(500).send({ error: 'Fetch not initialized' });
+    }
+    console.log('fetch is loaded ...')
     /*
         If you have two or more "business_country" + "business_label" pairs configured in your Hyperswitch dashboard,
         please pass the fields business_country and business_label in this request body.
@@ -15,9 +28,10 @@ app.post("/create-payment", async (req, res) => {
         https://api-reference.hyperswitch.io/docs/hyperswitch-api-reference/60bae82472db8-payments-create
     */
 
+    console.log('\t key is  ...', process.env.HYPERSWITCH_SECRET_KEY)
     fetch("https://sandbox.hyperswitch.io/payments", {
         method: "POST",
-        headers: { "Content-Type": "application/json", 'api-key': "HYPERSWITCH_API_KEY" },
+        headers: { "Content-Type": "application/json", 'api-key': process.env.HYPERSWITCH_SECRET_KEY },
         body: JSON.stringify({
             currency: "USD",
             amount: 100,
