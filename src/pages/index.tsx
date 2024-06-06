@@ -13,6 +13,10 @@ export default function Home() {
   const [loadHyperValue, setLoadHyperValue] = useState()
   const [options, setOptions] = useState({})
 
+  const [hyperPromise, setHyperPromise] = useState(null);
+  const [clientSecret, setClientSecret] = useState("");
+
+
   useEffect(() => {
     fetch("/create-payment", {
       method: "POST",
@@ -37,9 +41,16 @@ export default function Home() {
 
   return (
     <div className={styles.main}>
-      {Object.keys(options).length !== 0 ? <HyperElements options={options} hyper={loadHyperValue}>
-        <CheckoutForm />
-      </HyperElements> : <></>}
+      
+      {/* {
+        Object.keys(options).length !== 0 ? 
+          <HyperElements options={options} hyper={loadHyperValue}>
+            <CheckoutForm />
+          </HyperElements> : <></>
+      } */}
+
+      
+    
     </div>
   )
 }

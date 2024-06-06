@@ -77,10 +77,13 @@ const CheckoutForm: React.FC = ({ }) => {
             } else if (response.error) {
                 setMessage(response.error.message);
             } else {
-                setMessage("An unexpected error occurred.");
+                //setMessage("Response status null! An unexpected error occurred.");
+                setMessage(JSON.stringify(
+                    response
+                ));
             }
         } else {
-            setMessage("An unexpected error occurred.");
+            setMessage("No response! An unexpected error occurred.");
         }
 
         setIsLoading(false)
