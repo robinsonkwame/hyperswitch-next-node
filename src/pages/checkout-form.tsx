@@ -92,7 +92,7 @@ const CheckoutForm: React.FC = ({ }) => {
         <form onSubmit={handleSubmit}>
             <UnifiedCheckout id="unified-checkout" options={unifiedCheckoutOptions} />
             <button className={styles.button} disabled={!hyper || !widgets || isPaymentCompleted}>
-                {isLoading ? <div className={styles.spinner} id="spinner"></div> : <>Pay Now</>}
+                {isLoading ? <div className={styles.spinner} id="spinner"></div> : <>Sign Up</>}
             </button>
             {/* Show any error or success messages */}
             {message && <div id="payment-message" className={styles.paymentMessage}>{message}</div>}
