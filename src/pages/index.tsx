@@ -5,17 +5,10 @@ import { HyperElements } from "@juspay-tech/react-hyper-js";
 import React, { useEffect, useState } from "react"
 import CheckoutForm from './checkout-form'
 
-// ideally we could bake this in from .env ...
-const REACT_APP_PUBLISHABLE_KEY = 'pk_snd_332ccdc116b7422689572618b96ee6f1'
-
 export default function Home() {
 
   const [loadHyperValue, setLoadHyperValue] = useState()
   const [options, setOptions] = useState({})
-
-  const [hyperPromise, setHyperPromise] = useState(null);
-  const [clientSecret, setClientSecret] = useState("");
-
 
   useEffect(() => {
     fetch("/create-payment", {
@@ -33,24 +26,16 @@ export default function Home() {
       })
   }, [])
 
+  // TODO: get publishable key from server
   useEffect(() => {
-    console.log('Publishable Key:', REACT_APP_PUBLISHABLE_KEY);
-
-    setLoadHyperValue(loadHyper(REACT_APP_PUBLISHABLE_KEY));
+    setLoadHyperValue(loadHyper("pk_snd_332ccdc116b7422689572618b96ee6f1"));
   }, [])
 
   return (
     <div className={styles.main}>
-      
-      {/* {
-        Object.keys(options).length !== 0 ? 
-          <HyperElements options={options} hyper={loadHyperValue}>
-            <CheckoutForm />
-          </HyperElements> : <></>
-      } */}
-
-      
-    
+      {Object.keys(options).length !== 0 ? <HyperElements options={options} hyper={loadHyperValue}>
+        <CheckoutForm />
+      </HyperElements> : <></>}
     </div>
   )
 }
