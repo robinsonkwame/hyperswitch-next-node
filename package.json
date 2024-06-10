@@ -14,6 +14,7 @@
   "dependencies": {
     "@juspay-tech/hyper-js": "^1.5.0",
     "@juspay-tech/react-hyper-js": "^1.0.2",
+    "@nextui-org/react": "^2.4.1",
     "@types/node": "20.4.2",
     "@types/react": "18.2.15",
     "@types/react-dom": "18.2.7",

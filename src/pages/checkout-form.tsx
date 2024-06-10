@@ -90,7 +90,10 @@ const CheckoutForm: React.FC = ({ }) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <UnifiedCheckout id="unified-checkout" options={unifiedCheckoutOptions} />
+            <UnifiedCheckout 
+                id="unified-checkout" 
+                options={unifiedCheckoutOptions} 
+            />
             <button className={styles.button} disabled={!hyper || !widgets || isPaymentCompleted}>
                 {isLoading ? <div className={styles.spinner} id="spinner"></div> : <>Sign Up</>}
             </button>

@@ -3,7 +3,8 @@ import { loadHyper } from "@juspay-tech/hyper-js"
 import { HyperElements } from "@juspay-tech/react-hyper-js";
 
 import React, { useEffect, useState } from "react"
-import CheckoutForm from './checkout-form'
+//import CheckoutForm from './checkout-form'
+import SignUpForm from './signup-form'
 
 export default function Home() {
 
@@ -18,6 +19,7 @@ export default function Home() {
     }).then((res) => res.json())
       .then((data) => {
         setOptions({
+          data: JSON.parse(data.hyper),
           clientSecret: data.clientSecret,
           appearance: {
             theme: "default"
@@ -46,6 +48,7 @@ export default function Home() {
   //     setLoadHyperValue(value);
   //   });
   // }
+  console.log(options.data)
 
   return (
     // <div>
@@ -56,14 +59,21 @@ export default function Home() {
     //   </button>
 
     // </div>
-
     <div className={styles.main}>
       <h1>
-        Community-based Points Signup
-      </h1>      
-      {Object.keys(options).length !== 0 ? <HyperElements options={options} hyper={loadHyperValue}>
-        <CheckoutForm />
-      </HyperElements> : <></>}
+        Detroit Points Signup
+      </h1>
+
+      {
+          Object.keys(options).length !== 0 ? 
+            <HyperElements options={options} hyper={loadHyperValue}>
+              <SignUpForm />
+            </HyperElements> : 
+            <></>
+      }
+
+      <pre>{JSON.stringify(options, null, 2)}</pre>
+
     </div>
   )
 }
