@@ -40,14 +40,8 @@ app.post("/create-payment", async (req, res) => {
 
 // Endpoint to create customer and initiate zero auth
 app.post("/create-customer-zero-auth", async (req, res) => {
-    const customerDetails = req.body;
+    const { payment_method_type, ...customerDetails } = req.body;
     const customerId = generateCustomerId(customerDetails);
-
-    // Check if customer already exists (this part is pseudo-code, depends on your database)
-    // let customer = await findCustomerInDatabase(customerId);
-    // if (!customer) {
-    //   customer = await createCustomerInDatabase(customerId, customerDetails);
-    // }
 
   // Assuming customer creation is successful, initiate zero amount authorization
   const fetch = (await import("node-fetch")).default;
@@ -61,7 +55,8 @@ app.post("/create-customer-zero-auth", async (req, res) => {
       amount: 0,
       currency: "USD",
       customer_id: customerId,
-      setup_future_usage: "off_session"
+      setup_future_usage: "off_session",
+      payment_method_type: payment_method_type
     }),
   })
   .then(resp => resp.json())
@@ -75,7 +70,6 @@ app.post("/create-customer-zero-auth", async (req, res) => {
       res.status(500).send({ error: "Failed to initiate zero amount authorization" });
   });
 });
-
 
 app.listen(4242, () => console.log("Node server listening on port 4242!"));
 

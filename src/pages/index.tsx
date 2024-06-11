@@ -28,6 +28,8 @@ export default function Home() {
       })
   }, [])
 
+
+
   // TODO: get publishable key from server
   useEffect(() => {
     setLoadHyperValue(loadHyper("pk_snd_332ccdc116b7422689572618b96ee6f1"));
@@ -50,6 +52,9 @@ export default function Home() {
   // }
   console.log(options.data)
 
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
+
+
   return (
     // <div>
     //   Why hello there!
@@ -67,7 +72,12 @@ export default function Home() {
       {
           Object.keys(options).length !== 0 ? 
             <HyperElements options={options} hyper={loadHyperValue}>
-              <SignUpForm />
+              <SignUpForm 
+                isPaymentCompleted={isPaymentCompleted} 
+                setIsPaymentCompleted={setIsPaymentCompleted} 
+                paymentMethodType="credit"
+              />
+
             </HyperElements> : 
             <></>
       }
