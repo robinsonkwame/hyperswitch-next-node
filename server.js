@@ -43,7 +43,6 @@ app.post("/create-customer-zero-auth", async (req, res) => {
     const { payment_method_type, ...customerDetails } = req.body;
     const customerId = generateCustomerId(customerDetails);
 
-  // Assuming customer creation is successful, initiate zero amount authorization
   const fetch = (await import("node-fetch")).default;
   fetch("https://sandbox.hyperswitch.io/payments", {
     method: "POST",
