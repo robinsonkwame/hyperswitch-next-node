@@ -1,10 +1,13 @@
 require('dotenv').config();
 const express = require("express");
 const crypto = require("crypto");
+const cors = require("cors");
 
 const app = express();
 app.use(express.static("public"));
 app.use(express.json());
+app.use(cors());
+
 
 const generateCustomerId = (customerDetails) => {
     const { name, street, state, country, zipCode, email, phone } = customerDetails;
@@ -39,6 +42,7 @@ app.post("/create-payment", async (req, res) => {
 })
 
 // Endpoint to create customer and initiate zero auth
+/*
 app.post("/create-customer-zero-auth", async (req, res) => {
     const { payment_method_type, ...customerDetails } = req.body;
     const customerId = generateCustomerId(customerDetails);
@@ -64,6 +68,45 @@ app.post("/create-customer-zero-auth", async (req, res) => {
           message: "Zero amount authorization initiated",
           paymentId: data.payment_id
       });
+  })
+  .catch(error => {
+      res.status(500).send({ error: "Failed to initiate zero amount authorization" });
+  });
+});
+*/
+
+
+// Endpoint to create customer and initiate zero auth
+app.post("/create-customer-zero-auth", async (req, res) => {
+  const { payment_method_type, ...customerDetails } = req.body;
+  const customerId = generateCustomerId(customerDetails);
+
+  const fetch = (await import("node-fetch")).default;
+  fetch("https://sandbox.hyperswitch.io/payments", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+          'api-key': process.env.HYPERSWITCH_SECRET_KEY
+      },
+      body: JSON.stringify({
+          amount: 0,
+          currency: "USD",
+          customer_id: customerId,
+          setup_future_usage: "off_session",
+          payment_method_type: payment_method_type
+      }),
+  })
+  .then(resp => resp.json())
+  .then(data => {
+      if (data.error) {
+          res.status(400).send(data);
+      } else {
+          res.send({
+              message: "Zero amount authorization initiated",
+              clientSecret: data.client_secret,
+              paymentId: data.payment_id
+          });
+      }
   })
   .catch(error => {
       res.status(500).send({ error: "Failed to initiate zero amount authorization" });
