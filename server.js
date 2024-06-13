@@ -82,34 +82,74 @@ app.post("/create-customer-zero-auth", async (req, res) => {
   const customerId = generateCustomerId(customerDetails);
 
   const fetch = (await import("node-fetch")).default;
+
+  // Construct billing data from customerDetails
+  const billing = {
+    address: {
+      line1: customerDetails.street,
+      line2: "",
+      line3: "",
+      city: customerDetails.city,
+      state: customerDetails.state,
+      zip: customerDetails.zip,
+      country: "US", // NOTE: Typed to 2 letter countries
+      first_name: customerDetails.name.split(' ')[0], // Assuming the first word is the first name
+      last_name: customerDetails.name.split(' ').slice(1).join(' ') // Rest is last name
+    },
+    phone: {
+      number: customerDetails.phone.replace(/[^0-9]/g, ''), // Removing non-numeric characters
+      country_code: "+1"
+    }
+  };
+
+  const body = JSON.stringify({
+    amount: 0,
+    currency: "USD",
+    confirm: false,
+    customer_id: customerId,
+    setup_future_usage: "off_session",
+    payment_method_type: payment_method_type,
+    billing: billing
+})
+
   fetch("https://sandbox.hyperswitch.io/payments", {
       method: "POST",
       headers: {
           "Content-Type": "application/json",
           'api-key': process.env.HYPERSWITCH_SECRET_KEY
       },
-      body: JSON.stringify({
-          amount: 0,
-          currency: "USD",
-          customer_id: customerId,
-          setup_future_usage: "off_session",
-          payment_method_type: payment_method_type
-      }),
+      body: body,
   })
-  .then(resp => resp.json())
+  .then(resp => {
+      if (resp.status === 400) {
+        console.log("Here in status 400");
+        return resp.json().then(json => {
+          console.log("Hyperswitch Server returned: ", json);
+          throw new Error("400 Bad Request");
+        });
+      }
+      return resp.json();
+  })
   .then(data => {
       if (data.error) {
-          res.status(400).send(data);
+          console.log("data error", data);
+          if (!res.headersSent) {
+              res.status(400).send(data);
+          }
       } else {
-          res.send({
-              message: "Zero amount authorization initiated",
-              clientSecret: data.client_secret,
-              paymentId: data.payment_id
-          });
+          if (!res.headersSent) {
+              res.send({
+                  message: "Zero amount authorization initiated",
+                  clientSecret: data.client_secret,
+                  paymentId: data.payment_id
+              });
+          }
       }
   })
   .catch(error => {
-      res.status(500).send({ error: "Failed to initiate zero amount authorization" });
+      if (!res.headersSent) {
+          res.status(500).send({ error: "Failed to initiate zero amount authorization" });
+      }
   });
 });
 

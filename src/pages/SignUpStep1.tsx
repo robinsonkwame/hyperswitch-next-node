@@ -15,12 +15,30 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
     const [paymentMethodId, setPaymentMethodId] = useState("");
     const [clientSecret, setClientSecret] = useState("");
     const [loadHyperValue, setLoadHyperValue] = useState()
+    const [isPaymentCompleted, setIsPaymentCompleted] = useState(false)
+    const hyper = useHyper();
+    const widgets = useWidgets()
+    const options = {
+        defaultValues: {
+            billingDetails: {
+                name: addressData.name || "",
+                email: addressData.email || "",
+                phone: addressData.phone || "",
+                address: {
+                    line1: addressData.street || "",
+                    line2: "",
+                    city: addressData.city || "Detroit",
+                    state: addressData.state || "MI",
+                    country: addressData.country || "United States",
+                    postal_code: addressData.zip || ""
+                }
+            }
+        }}
+
 
     useEffect(() => {
         setLoadHyperValue(loadHyper(PUBLISHABLE_CLIENT_KEY));
       }, [])
-    
-
 
     useEffect(() => {
         const fetchClientSecret = async () => {
@@ -58,36 +76,46 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
 
     useEffect(() => {
         console.log("Client secret:", clientSecret); // This will log the updated client secret
-    }, [clientSecret]); // Dependency array includes clientSecret to run this effect when clientSecret changes
-
-    /*
-    NEEDED TO ask hyper to use the unfied form
-                const hyper = await loadHyper(PUBLISHABLE_CLIENT_KEY, {
-                    baseUrl: "https://sandbox.hyperswitch.io"
-                });                
-
-                const resp = await hyper.retrievePaymentIntent(paymentId);
-        
-                console.log("Payment Intent:", resp); // Log the paymentId
-    
-    */
-
-                /*
-                    <UnifiedCheckout
-                        id="unified-checkout"
-                        onSuccess={handlePaymentSuccess}
-                        options={{
-                            clientSecret,
-                            returnUrl: "http://localhost:3000",
-                        }}
-                    />
-            )}                
-                */
+    }, [clientSecret]);
 
     const handlePaymentSuccess = (result: any) => {
         if (result.paymentIntent?.payment_method) {
             setPaymentMethodId(result.paymentIntent.payment_method);
         }
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!hyper || !widgets) {
+            return;
+        }
+
+        /*
+        const response = await hyper.confirmPayment({
+            widgets,
+            confirmParams: {
+                return_url: "http://localhost:3000",
+            },
+            redirect: "if_required",
+        });
+
+        console.log(response)
+
+        if (response) {
+            if (response.status === "succeeded") {
+                console.log("Payment Successful");
+            } else if (response.error) {
+                console.log(response.error.message);
+            } else {
+                console.log("An unexpected error occurred.");
+            }
+        } else {
+            console.log("An unexpected error occurred.");
+        }
+        */
+
+        setIsPaymentCompleted(true);
     };
 
     return (
@@ -97,24 +125,27 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
             <pre>Client secret: {clientSecret}</pre>
 
             {clientSecret && (
-                <HyperElements 
-                    options={{
-                        clientSecret: clientSecret,
-                        appearance: {
-                            theme: "default"
-                        }
-                    }}
-                    hyper={loadHyperValue}
-                >
-                    <UnifiedCheckout
-                        id="unified-checkout"
-                        onSuccess={handlePaymentSuccess}
+                <form onSubmit={handleSubmit}>
+                    <HyperElements 
                         options={{
-                            clientSecret,
-                            returnUrl: "http://localhost:3000",
+                            clientSecret: clientSecret,
+                            appearance: {
+                                theme: "default"
+                            }
                         }}
-                    />
-                </HyperElements>
+                        hyper={loadHyperValue}
+                    >
+                        <UnifiedCheckout
+                            id="unified-checkout"
+                            onSuccess={handlePaymentSuccess}
+                            options={options}
+                        />
+                    </HyperElements>
+
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50" disabled={isPaymentCompleted}>
+                        Add Card
+                    </button>
+                </form>
             )}
 
 

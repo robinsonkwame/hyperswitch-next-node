@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
-import styles from '../styles/page.module.css';
 import { SignUpStep1 } from './SignUpStep1';
 import { SignUpStep2 } from './SignUpStep2';
 import AddressForm from './AddressForm';
-import { loadHyper } from "@juspay-tech/hyper-js";
-import { HyperElements } from "@juspay-tech/react-hyper-js";
-import SignUpForm from './signup-form';
 
 const PUBLISHABLE_CLIENT_KEY = "pk_snd_332ccdc116b7422689572618b96ee6f1"
 const CREATE_ZERO_AUTH_ENDPOINT = "/create-customer-zero-auth"
