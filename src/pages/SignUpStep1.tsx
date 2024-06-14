@@ -1,6 +1,6 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import styles from '../styles/page.module.css';
-import { useHyper, useWidgets, UnifiedCheckout } from "@juspay-tech/react-hyper-js";
+import { useHyper, useWidgets, useElements, UnifiedCheckout } from "@juspay-tech/react-hyper-js";
 import { HyperElements } from "@juspay-tech/react-hyper-js";
 import { loadHyper } from "@juspay-tech/hyper-js"
 
@@ -17,7 +17,9 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
     const [loadHyperValue, setLoadHyperValue] = useState()
     const [isPaymentCompleted, setIsPaymentCompleted] = useState(false)
     const hyper = useHyper();
-    const widgets = useWidgets()
+    const widgets = useWidgets();
+    //const elements = useElements();
+
     const options = {
         defaultValues: {
             billingDetails: {
@@ -29,7 +31,7 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
                     line2: "",
                     city: addressData.city || "Detroit",
                     state: addressData.state || "MI",
-                    country: addressData.country || "United States",
+                    country: addressData.country || 'United States',
                     postal_code: addressData.zip || ""
                 }
             }
@@ -79,6 +81,8 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
     }, [clientSecret]);
 
     const handlePaymentSuccess = (result: any) => {
+        console.log("Payment successful:", result);
+
         if (result.paymentIntent?.payment_method) {
             setPaymentMethodId(result.paymentIntent.payment_method);
         }
@@ -90,6 +94,21 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
         if (!hyper || !widgets) {
             return;
         }
+
+        // if (hyper) {
+        //     console.log("Hyper object functions:");
+        //     Object.keys(hyper).forEach(key => {
+        //         if (typeof hyper[key] === 'function') {
+        //             console.log(`${key}: ${hyper[key].toString()}`);
+        //         }
+        //     });
+        // } else {
+        //     console.log("Hyper object is not defined.");
+        // }
+
+        const cardElement = widgets.getElement('unified-checkout');
+        console.log('cardElement', cardElement)
+
 
         /*
         const response = await hyper.confirmPayment({
@@ -142,7 +161,7 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
                         />
                     </HyperElements>
 
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50" disabled={isPaymentCompleted}>
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50">{/* disabled={isPaymentCompleted} */}
                         Add Card
                     </button>
                 </form>
