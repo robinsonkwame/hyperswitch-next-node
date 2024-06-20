@@ -10,8 +10,24 @@ const getIframeBody = () => {
     .then(cy.wrap)
 }
 
+const typeIntoLabeledInput = (label: string, value: string) => {
+  cy.contains('div', label)
+    .next('div')
+    .find('input')
+    .should('be.visible')
+    .type(value);
+}
 
 describe('Payment Workflow Test', () => {
+  beforeEach(() => {
+    // Ignore specific uncaught exceptions
+    Cypress.on('uncaught:exception', (err) => {
+      if (err.message.includes('Failed to execute \'attachShadow\' on \'Element\'')) {
+        return false;
+      }
+    });
+  });
+
   it('Completes a payment from intent creation to confirmation', () => {
     // Step 1: Add default billing address and proceed to next step
     cy.visit('http://localhost:3000');
@@ -34,11 +50,19 @@ describe('Payment Workflow Test', () => {
     // Interact with elements inside the iframe
     cy.wait(2000); // Add a wait before interacting with the iframe content
     getIframeBody().within(() => {
-      cy.get('#card-element').should('be.visible').type('4242424242424242');
-      cy.get('#card-expiry').should('be.visible').type('4/44');
-      cy.get('#card-cvc').should('be.visible').type('123');
-      cy.get('#submit-button').should('be.visible').click();
+      typeIntoLabeledInput('Card Number', '4242424242424242');
+      typeIntoLabeledInput('Expiry', '4/44');
+      typeIntoLabeledInput('CVC', '123');
+      typeIntoLabeledInput('Card Nickname', 'My Test Card');      
     });
+    
+    cy.get('button').contains('Add Card').should('be.visible').click();
+
+    // Wait for navigation or a specific element to appear after card addition
+    cy.get('body', { timeout: 10000 }).should('not.contain', 'Add Card');
+
+    // If there's a specific success message or element, wait for it
+    cy.contains('Card added successfully', { timeout: 10000 }).should('be.visible');
 
     cy.log('Test completed successfully');
   });
