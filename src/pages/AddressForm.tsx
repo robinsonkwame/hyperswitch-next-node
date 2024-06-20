@@ -3,13 +3,14 @@ import React, { useState } from "react";
 
 const AddressForm = ({ onNext }) => {
     const [formData, setFormData] = useState({
-        name: "",
-        street: "",
-        city: "",
-        state: "",
-        zip: "",
-        email: "",
-        phone: ""
+        name: "Jamal Jarad",
+        street: "123 Grand Avenue",
+        city: "Detroit",
+        state: "MI",
+        zip: "48201",
+        country: "USA",
+        email: "jamal@example.com",
+        phone: "123-456-7890"
     });
 
     const handleChange = (e) => {
@@ -17,14 +18,16 @@ const AddressForm = ({ onNext }) => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const isFormComplete = Object.entries(formData).every(([key, value]) => {
-        if (key === "phone" || key === "email") return true;
-        return value.trim() !== "";
-    });
+    const isFormComplete = React.useMemo(() => {
+        return Object.entries(formData).every(([key, value]) => {
+            if (key === "phone" || key === "email") return true;
+            return value.trim() !== "";
+        });
+    }, [formData]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (isFormComplete) {
+        if (isFormComplete) { // Corrected to function call
             onNext(formData);
         } else {
             alert("Please fill in all fields.");
