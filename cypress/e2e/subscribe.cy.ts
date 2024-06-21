@@ -19,6 +19,8 @@ const typeIntoLabeledInput = (label: string, value: string) => {
 }
 
 describe('Payment Workflow Test', () => {
+  let consoleErrors = [];
+
   beforeEach(() => {
     // Ignore specific uncaught exceptions
     Cypress.on('uncaught:exception', (err) => {
@@ -27,6 +29,18 @@ describe('Payment Workflow Test', () => {
       }
     });
   });
+
+  beforeEach(() => {
+    // Capture console errors
+    cy.on('window:before:load', (win) => {
+      const originalConsoleError = win.console.error;
+      win.console.error = function (...args) {
+        consoleErrors.push(args);
+        originalConsoleError.apply(win.console, args);
+      };
+    });
+  });
+
 
   it('Completes a payment from intent creation to confirmation', () => {
     // Step 1: Add default billing address and proceed to next step
@@ -53,17 +67,29 @@ describe('Payment Workflow Test', () => {
       typeIntoLabeledInput('Card Number', '4242424242424242');
       typeIntoLabeledInput('Expiry', '4/44');
       typeIntoLabeledInput('CVC', '123');
-      typeIntoLabeledInput('Card Nickname', 'My Test Card');      
+      typeIntoLabeledInput('Card Nickname', 'My Test Card');
     });
     
     cy.get('button').contains('Add Card').should('be.visible').click();
 
     // Wait for navigation or a specific element to appear after card addition
-    cy.get('body', { timeout: 10000 }).should('not.contain', 'Add Card');
+    cy.get('body', { timeout: 5000 }).should('not.contain', 'Add Card');
 
     // If there's a specific success message or element, wait for it
     cy.contains('Card added successfully', { timeout: 10000 }).should('be.visible');
 
     cy.log('Test completed successfully');
   });
+
+  afterEach(() => {
+    if (consoleErrors.length > 0) {
+      consoleErrors.forEach((error) => {
+        cy.log('Console Error:', error.join(' '));
+      });
+    } else {
+      cy.log('No console errors captured.');
+    }
+    // Reset consoleErrors for the next test
+    consoleErrors = [];
+  });  
 });

@@ -1,8 +1,6 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useEffect, useState, useRef } from 'react';
 import styles from '../styles/page.module.css';
-import { useHyper, useWidgets, useElements, UnifiedCheckout } from "@juspay-tech/react-hyper-js";
-import { HyperElements } from "@juspay-tech/react-hyper-js";
-import { loadHyper } from "@juspay-tech/hyper-js"
+import { loadHyper, Hyper } from "@juspay-tech/hyper-js";
 
 interface SignUpStep1Props {
     onNext: (data: any) => void;
@@ -14,11 +12,10 @@ const PUBLISHABLE_CLIENT_KEY = "pk_snd_332ccdc116b7422689572618b96ee6f1"
 export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData }) => {
     const [paymentMethodId, setPaymentMethodId] = useState("");
     const [clientSecret, setClientSecret] = useState("");
-    const [loadHyperValue, setLoadHyperValue] = useState()
+    const [hyper, setHyper] = useState<Hyper | null>(null);
+    const [paymentElement, setPaymentElement] = useState<any>(null);
     const [isPaymentCompleted, setIsPaymentCompleted] = useState(false)
-    const hyper = useHyper();
-    const widgets = useWidgets();
-    //const elements = useElements();
+    const unifiedCheckoutRef = useRef(null);
 
     const options = {
         defaultValues: {
@@ -35,12 +32,44 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
                     postal_code: addressData.zip || ""
                 }
             }
-        }}
-
+        }
+    }
 
     useEffect(() => {
-        setLoadHyperValue(loadHyper(PUBLISHABLE_CLIENT_KEY));
-      }, [])
+        let hyperInstance: Hyper | null = null;
+        const initializeHyper = async () => {
+            hyperInstance = await loadHyper(PUBLISHABLE_CLIENT_KEY);
+            setHyper(hyperInstance);
+        };
+        initializeHyper();
+
+        return () => {
+            if (hyperInstance) {
+                hyperInstance.destroy();
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!hyper || !clientSecret) {
+            return;
+        }
+
+        const element = hyper.elements({
+            clientSecret,
+            appearance: {
+                theme: 'default',
+            },
+        });
+
+        const paymentElement = element.create('payment');
+        paymentElement.mount('#payment-element');
+        setPaymentElement(paymentElement);
+
+        return () => {
+            paymentElement.destroy();
+        };
+    }, [hyper, clientSecret]);
 
     useEffect(() => {
         const fetchClientSecret = async () => {
@@ -76,13 +105,8 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
         fetchClientSecret();
     }, [addressData]);
 
-    useEffect(() => {
-        console.log("Client secret:", clientSecret); // This will log the updated client secret
-    }, [clientSecret]);
-
     const handlePaymentSuccess = (result: any) => {
         console.log("Payment successful:", result);
-
         if (result.paymentIntent?.payment_method) {
             setPaymentMethodId(result.paymentIntent.payment_method);
         }
@@ -91,50 +115,26 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!hyper || !widgets) {
+        if (!hyper) {
+            console.error("Hyper not initialized");
             return;
         }
 
-        // if (hyper) {
-        //     console.log("Hyper object functions:");
-        //     Object.keys(hyper).forEach(key => {
-        //         if (typeof hyper[key] === 'function') {
-        //             console.log(`${key}: ${hyper[key].toString()}`);
-        //         }
-        //     });
-        // } else {
-        //     console.log("Hyper object is not defined.");
-        // }
-
-        const cardElement = widgets.getElement('unified-checkout');
-        console.log('cardElement', cardElement)
-
-
-        /*
-        const response = await hyper.confirmPayment({
-            widgets,
+        const { error, paymentIntent } = await hyper.confirmPayment({
+            elements: paymentElement,
             confirmParams: {
-                return_url: "http://localhost:3000",
+                return_url: "http://localhost:3000/payment-success",
             },
             redirect: "if_required",
         });
 
-        console.log(response)
-
-        if (response) {
-            if (response.status === "succeeded") {
-                console.log("Payment Successful");
-            } else if (response.error) {
-                console.log(response.error.message);
-            } else {
-                console.log("An unexpected error occurred.");
-            }
-        } else {
-            console.log("An unexpected error occurred.");
+        if (error) {
+            console.error("Payment failed:", error.message);
+        } else if (paymentIntent) {
+            console.log("Payment succeeded:", paymentIntent);
+            setPaymentMethodId(paymentIntent.payment_method);
+            setIsPaymentCompleted(true);
         }
-        */
-
-        setIsPaymentCompleted(true);
     };
 
     return (
@@ -145,28 +145,16 @@ export const SignUpStep1: React.FC<SignUpStep1Props> = ({ onNext, addressData })
 
             {clientSecret && (
                 <form onSubmit={handleSubmit}>
-                    <HyperElements 
-                        options={{
-                            clientSecret: clientSecret,
-                            appearance: {
-                                theme: "default"
-                            }
-                        }}
-                        hyper={loadHyperValue}
-                    >
-                        <UnifiedCheckout
-                            id="unified-checkout"
-                            onSuccess={handlePaymentSuccess}
-                            options={options}
-                        />
-                    </HyperElements>
+                    <div id="payment-element"></div>
 
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50">{/* disabled={isPaymentCompleted} */}
+                    <button 
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50" 
+                        disabled={!paymentElement || isPaymentCompleted}
+                    >
                         Add Card
                     </button>
                 </form>
             )}
-
 
             {paymentMethodId && <p>Payment Method ID: {paymentMethodId}</p>}
 

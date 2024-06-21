@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AddressForm from './AddressForm';
 import { SignUpStep1 } from './SignUpStep1';
+import { SignUpStep2 } from './SignUpStep2';
 
 export default function Home() {
     const [addressData, setAddressData] = useState(null);
@@ -21,7 +22,7 @@ export default function Home() {
                 !addressData ? (
                     <AddressForm onNext={handleAddressSubmit} />
                 ) : (
-                    <SignUpStep1 onNext={handleSignUpComplete} addressData={addressData} />
+                    <SignUpStep2 onNext={handleSignUpComplete} addressData={addressData} />
                 )
             ) : (
                 <p className="text-lg text-center text-green-600">
