@@ -7,6 +7,117 @@ interface SignUpStep2Props {
     addressData: any;
 }
 
+const PAYMENT_METHOD = {
+    CARD: "card",
+    CARD_REDIRECT: "card_redirect",
+    PAY_LATER: "pay_later",
+    WALLET: "wallet",
+    BANK_REDIRECT: "bank_redirect",
+    BANK_TRANSFER: "bank_transfer",
+    CRYPTO: "crypto",
+    BANK_DEBIT: "bank_debit",
+    REWARD: "reward",
+    REAL_TIME_PAYMENT: "real_time_payment",
+    UPI: "upi",
+    VOUCHER: "voucher",
+    GIFT_CARD: "gift_card",
+};
+
+const PAYMENT_METHOD_TYPE = {
+    ACH: "ach",
+    AFFIRM: "affirm",
+    AFTERPAY_CLEARPAY: "afterpay_clearpay",
+    ALFAMART: "alfamart",
+    ALI_PAY: "ali_pay",
+    ALI_PAY_HK: "ali_pay_hk",
+    ALMA: "alma",
+    APPLE_PAY: "apple_pay",
+    ATOME: "atome",
+    BACS: "bacs",
+    BANCONTACT_CARD: "bancontact_card",
+    BECS: "becs",
+    BENEFIT: "benefit",
+    BIZUM: "bizum",
+    BLIK: "blik",
+    BOLETO: "boleto",
+    BCA_BANK_TRANSFER: "bca_bank_transfer",
+    BNI_VA: "bni_va",
+    BRI_VA: "bri_va",
+    CARD_REDIRECT: "card_redirect",
+    CIMB_VA: "cimb_va",
+    CLASSIC: "classic",
+    CREDIT: "credit",
+    CRYPTO_CURRENCY: "crypto_currency",
+    CASHAPP: "cashapp",
+    DANA: "dana",
+    DANAMON_VA: "danamon_va",
+    DEBIT: "debit",
+    DUIT_NOW: "duit_now",
+    EFECTY: "efecty",
+    EPS: "eps",
+    FPS: "fps",
+    EVOUCHER: "evoucher",
+    GIROPAY: "giropay",
+    GIVEX: "givex",
+    GOOGLE_PAY: "google_pay",
+    GO_PAY: "go_pay",
+    GCASH: "gcash",
+    IDEAL: "ideal",
+    INTERAC: "interac",
+    INDOMARET: "indomaret",
+    KLARNA: "klarna",
+    KAKAO_PAY: "kakao_pay",
+    LOCAL_BANK_REDIRECT: "local_bank_redirect",
+    MANDIRI_VA: "mandiri_va",
+    KNET: "knet",
+    MB_WAY: "mb_way",
+    MOBILE_PAY: "mobile_pay",
+    MOMO: "momo",
+    MOMO_ATM: "momo_atm",
+    MULTIBANCO: "multibanco",
+    ONLINE_BANKING_THAILAND: "online_banking_thailand",
+    ONLINE_BANKING_CZECH_REPUBLIC: "online_banking_czech_republic",
+    ONLINE_BANKING_FINLAND: "online_banking_finland",
+    ONLINE_BANKING_FPX: "online_banking_fpx",
+    ONLINE_BANKING_POLAND: "online_banking_poland",
+    ONLINE_BANKING_SLOVAKIA: "online_banking_slovakia",
+    OXXO: "oxxo",
+    PAGO_EFECTIVO: "pago_efectivo",
+    PERMATA_BANK_TRANSFER: "permata_bank_transfer",
+    OPEN_BANKING_UK: "open_banking_uk",
+    PAY_BRIGHT: "pay_bright",
+    PAYPAL: "paypal",
+    PIX: "pix",
+    PAY_SAFE_CARD: "pay_safe_card",
+    PRZELEWY24: "przelewy24",
+    PROMPT_PAY: "prompt_pay",
+    PSE: "pse",
+    RED_COMPRA: "red_compra",
+    RED_PAGOS: "red_pagos",
+    SAMSUNG_PAY: "samsung_pay",
+    SEPA: "sepa",
+    SOFORT: "sofort",
+    SWISH: "swish",
+    TOUCH_N_GO: "touch_n_go",
+    TRUSTLY: "trustly",
+    TWINT: "twint",
+    UPI_COLLECT: "upi_collect",
+    UPI_INTENT: "upi_intent",
+    VIPPS: "vipps",
+    VIET_QR: "viet_qr",
+    VENMO: "venmo",
+    WALLEY: "walley",
+    WE_CHAT_PAY: "we_chat_pay",
+    SEVEN_ELEVEN: "seven_eleven",
+    LAWSON: "lawson",
+    MINI_STOP: "mini_stop",
+    FAMILY_MART: "family_mart",
+    SEICOMART: "seicomart",
+    PAY_EASY: "pay_easy",
+    LOCAL_BANK_TRANSFER: "local_bank_transfer",
+    MIFINITY: "mifinity"
+};
+
 const PUBLISHABLE_CLIENT_KEY = "pk_snd_332ccdc116b7422689572618b96ee6f1"
 
 export const SignUpStep2: React.FC<SignUpStep2Props> = ({ onNext, addressData }) => {
@@ -20,16 +131,16 @@ export const SignUpStep2: React.FC<SignUpStep2Props> = ({ onNext, addressData })
     const options = {
         defaultValues: {
             billingDetails: {
-                name: addressData.name || "",
-                email: addressData.email || "",
-                phone: addressData.phone || "",
+                name: addressData?.name || "",
+                email: addressData?.email || "",
+                phone: addressData?.phone || "",
                 address: {
-                    line1: addressData.street || "",
+                    line1: addressData?.street || "",
                     line2: "",
-                    city: addressData.city || "Detroit",
-                    state: addressData.state || "MI",
-                    country: addressData.country || 'United States',
-                    postal_code: addressData.zip || ""
+                    city: addressData?.city || "Detroit",
+                    state: addressData?.state || "MI",
+                    country: addressData?.country || 'United States',
+                    postal_code: addressData?.zip || ""
                 }
             }
         }
@@ -43,9 +154,10 @@ export const SignUpStep2: React.FC<SignUpStep2Props> = ({ onNext, addressData })
         };
         initializeHyper();
 
+
         return () => {
             if (hyperInstance) {
-                hyperInstance.destroy();
+                hyperInstance = null;
             }
         };
     }, []);
@@ -72,7 +184,16 @@ export const SignUpStep2: React.FC<SignUpStep2Props> = ({ onNext, addressData })
     }, [hyper, clientSecret]);
 
     useEffect(() => {
+        const isAddressDataComplete = (data: any) => {
+            return data && Object.values(data).every(value => value !== null && value !== undefined && value !== "");
+        };
+
         const fetchClientSecret = async () => {
+            if (!isAddressDataComplete(addressData)) {
+                console.error("Address data is incomplete");
+                return;
+            }
+
             try {
                 const response = await fetch("http://localhost:4242/create-customer-ach-zero-auth", {
                     method: "POST",
@@ -80,15 +201,17 @@ export const SignUpStep2: React.FC<SignUpStep2Props> = ({ onNext, addressData })
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        payment_method_type: "ach",// critical to keep them the same
+                        payment_method: PAYMENT_METHOD.BANK_DEBIT,
+                        payment_method_type: PAYMENT_METHOD_TYPE.ACH,
+                        payemnt_method_data: "",
                         ...addressData
                     })
                 });
-        
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-        
+
                 const data = await response.json();
                 const paymentId = data.paymentId;
                 setClientSecret(data.clientSecret);

@@ -8,6 +8,22 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(cors());
 
+// not sure how to share const between .js and .tsx...
+const PAYMENT_METHOD = {
+    CARD: "card",
+    CARD_REDIRECT: "card_redirect",
+    PAY_LATER: "pay_later",
+    WALLET: "wallet",
+    BANK_REDIRECT: "bank_redirect",
+    BANK_TRANSFER: "bank_transfer",
+    CRYPTO: "crypto",
+    BANK_DEBIT: "bank_debit",
+    REWARD: "reward",
+    REAL_TIME_PAYMENT: "real_time_payment",
+    UPI: "upi",
+    VOUCHER: "voucher",
+    GIFT_CARD: "gift_card",
+};
 
 const generateCustomerId = (customerDetails) => {
     const { name, street, state, country, zipCode, email, phone } = customerDetails;
@@ -112,11 +128,15 @@ app.post("/create-customer-zero-auth", async (req, res) => {
 
 // Endpoint to create customer and initiate zero auth
 app.post("/create-customer-ach-zero-auth", async (req, res) => {
-    const { payment_method_type, ...customerDetails } = req.body;
+    const { payment_method, payment_method_type, ...customerDetails } = req.body;
 
     // Validate required fields
     const requiredFields = ['name', 'street', 'city', 'state', 'zip'];
     const missingFields = requiredFields.filter(field => !customerDetails[field]);
+
+    if (payment_method !== PAYMENT_METHOD.BANK_DEBIT) {
+        return res.status(400).send({ error: "Invalid payment method. Only BANK DEBIT is supported." });
+    }
 
     if (missingFields.length > 0) {
         return res.status(400).send({ error: `Missing required fields: ${missingFields.join(', ')}` });
@@ -149,7 +169,9 @@ app.post("/create-customer-ach-zero-auth", async (req, res) => {
         confirm: false,
         customer_id: customerId,
         setup_future_usage: "off_session",
-        payment_method: payment_method_type, // overloading
+        payment_method: payment_method,
+        payment_method_type: payment_method_type,
+        payment_method_data: "", // typically empty
         billing: billing
     });
 
